@@ -1,45 +1,49 @@
-SET knav_gui_frameleft to VECDRAW(
-	V(0,20,0),
-	V(-10,0,0),
-	white,
-	"",
-	1.0,
-	TRUE).
-SET knav_gui_frameright to VECDRAW(
-	V(0,10,0),
-	V(-10,0,0),
-	white,
-	"",
-	1.0,
-	TRUE).
-SET knav_gui_frametop to VECDRAW(
-	V(-10,20,0),
-	V(0,-10,0),
-	white,
-	"",
-	1.0,
-	TRUE).
-SET knav_gui_framebottom to VECDRAW(
-	V(0,20,0),
-	V(0,-10,0),
-	white,
-	"",
-	1.0,
-	TRUE).
-SET knav_gui_centerloc to VECDRAW(
-	V(-10,15,0),
-	V(10,0,0),
-	white,
-	"",
-	1.0,
-	TRUE).
-SET knav_gui_centergs to VECDRAW(
-	V(-5,20,0),
-	V(0,-10,0),
-	white,
-	"",
-	1.0,
-	TRUE).
+FUNCTION knav_draw_gui {
+
+  SET knav_gui_frameleft to VECDRAW(
+	SHIP:FACING:STARVECTOR*-20,
+	SHIP:FACING:UPVECTOR*10,
+  	white,
+  	"",
+  	1.0,
+  	TRUE).
+  SET knav_gui_frameright to VECDRAW(
+	SHIP:FACING:STARVECTOR*-10,
+	SHIP:FACING:UPVECTOR*10,
+  	white,
+  	"",
+  	1.0,
+  	TRUE).
+  SET knav_gui_frametop to VECDRAW(
+	SHIP:FACING:STARVECTOR*-20+SHIP:FACING:UPVECTOR*10,
+	SHIP:FACING:STARVECTOR*10,
+  	white,
+  	"",
+  	1.0,
+  	TRUE).
+  SET knav_gui_framebottom to VECDRAW(
+	SHIP:FACING:STARVECTOR*-20,
+	SHIP:FACING:STARVECTOR*10,
+  	white,
+  	"",
+  	1.0,
+  	TRUE).
+  SET knav_gui_centerloc to VECDRAW(
+	SHIP:FACING:STARVECTOR*-15+SHIP:FACING:UPVECTOR*10,
+	SHIP:FACING:UPVECTOR*-10,
+  	white,
+  	"",
+  	1.0,
+  	TRUE).
+  SET knav_gui_centergs to VECDRAW(
+	SHIP:FACING:STARVECTOR*-20+SHIP:FACING:UPVECTOR*5,
+	SHIP:FACING:STARVECTOR*10,
+  	white,
+  	"",
+  	1.0,
+  	TRUE).
+
+}
 
 // Configuration
 SET color_ok to green.
@@ -53,8 +57,8 @@ SET gs_fullscale TO 1.4.
 SET loc_fullscale TO 5.
 // Configures how far the maximum needle deflection is, from
 // one side to the center
-SET gs_maxdeflect TO 22.5.
-SET loc_maxdeflect TO 22.5.
+SET gs_maxdeflect TO 45.0.
+SET loc_maxdeflect TO 45.0.
 // Calculated constants from config
 SET loc_minerror TO -0.5 * loc_fullscale.
 SET loc_maxerror TO  0.5 * loc_fullscale.
@@ -73,12 +77,15 @@ FUNCTION knav_draw_loc_needle {
 	IF loc_angle < loc_minerror { SET loc_angle TO loc_minerror. SET loc_color TO color_inop. }
 	SET loc_angle TO loc_angle * loc_scalefactor.
 
-	SET loc_y TO SIN(loc_angle)*-10.
-	SET loc_x to COS(loc_angle)*10.
+	SET loc_x TO SIN(loc_angle)*10.
+	SET loc_y to COS(loc_angle)*-10.
+
+	SET vec_x TO SHIP:FACING:STARVECTOR.
+	SET vec_y TO SHIP:FACING:UPVECTOR.
 	
 	SET knav_gui_locneedle to VECDRAW(
-		V(-10,15,0),
-		V(loc_x,loc_y,0),
+		SHIP:FACING:STARVECTOR*-15+SHIP:FACING:UPVECTOR*10,
+		loc_x*vec_x+loc_y*vec_y,
 		loc_color,
 		"",
 		1.0,
@@ -94,12 +101,15 @@ FUNCTION knav_draw_gs_needle {
 	IF gs_angle < gs_minerror { SET gs_angle TO gs_minerror. SET gs_color TO color_inop. }
 	SET gs_angle TO gs_angle * gs_scalefactor.
 
-	SET gs_x TO SIN(gs_angle)*10.
-	SET gs_y to COS(gs_angle)*-10.
+	SET gs_x TO COS(gs_angle)*10.
+	SET gs_y to SIN(gs_angle)*-10.
+
+	SET vec_x TO SHIP:FACING:STARVECTOR.
+	SET vec_y TO SHIP:FACING:UPVECTOR.
 	
 	SET knav_gui_gsneedle to VECDRAW(
-		V(-5,20,0),
-		V(gs_x,gs_y,0),
+		SHIP:FACING:STARVECTOR*-20+SHIP:FACING:UPVECTOR*5,
+		gs_x*vec_x+gs_y*vec_y,
 		gs_color,
 		"",
 		1.0,
@@ -124,10 +134,11 @@ FUNCTION knav_update_gs_error {
 
 
 UNTIL 2<1 {
+	knav_draw_gui.
 	knav_update_loc_error.
 	knav_draw_loc_needle(knav_localizer_error).
 	knav_update_gs_error.
 	knav_draw_gs_needle(knav_glideslope_error).
-	WAIT 0.2.
+	WAIT 0.01.
 }
 
